@@ -1,37 +1,19 @@
-FROM scratch AS build
-COPY <<EOF ./scratch.hello
-hello world
-EOF
-
-FROM golang:1.24
-WORKDIR /usr/src/app
-
-COPY <<EOF ./go.mod
-module golang
-go 1.24.1
-EOF
-
+# Stage 1: Fetch dependencies
+FROM golang:alpine AS deps
+WORKDIR /app
+COPY go.mod ./
+#COPY go.sum ./
 RUN go mod download
 
-COPY <<EOF /usr/src/app/main.go
-package main
-import (
-    "fmt"
-    "net/http"
-)
-func helloHandler(w http.ResponseWriter, r *http.Request) {
-    fmt.Fprintln(w, "Hello, World!")
-}
-func main() {
-    http.HandleFunc("/", helloHandler)
-    fmt.Println("Server started at http://192.168.88.26:8888 ")
-    http.ListenAndServe(":8888", nil)
-}
-EOF
+# Stage 2: Build the application binary
+FROM deps AS builder
+WORKDIR /app
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o app
 
-COPY --from=build /scratch.hello /usr/src/app/
-
-RUN go build -v -o /usr/local/bin/app ./...
-
-EXPOSE 8888
-CMD ["app"]```
+# Stage 3: Run the application in a small image
+FROM alpine:latest
+WORKDIR /app
+COPY --from=builder /app/app .
+EXPOSE 8080
+CMD ["./app"]
