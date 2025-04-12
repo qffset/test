@@ -21,6 +21,7 @@ pipeline {
     
         stage('Build Image') {
             steps {
+                sh 'docker tag test:latest new-test:v1
                 sh "docker build -t test ."
             }
         }
@@ -36,7 +37,7 @@ stage('Cleanup') {
             } else {
                 try {
                     sh 'docker stop go_test || true'
-                    sh 'docker rm go_test || true'
+                    sh 'docker rm -f go_test || true'
                 } catch (err) {
                     echo "Ошибка очистки контейнера: ${err}"
                 }
