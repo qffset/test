@@ -24,16 +24,24 @@ stage('Cleanup') {
     steps {
         script {
             // Проверяем, существует ли контейнер
-            def containerExists = sh(script: 'docker ps -a | grep go_test', returnStatus: true)
-            
-            if (!containerExists) {
-                echo "Conteiner go_test not found."
+            def containerFound = sh(script: 'docker ps -a | grep go_test', returnStatus: true)
+
+            if (!containerFound) {
+                echo "Контейнер go_test не найден."
             } else {
                 try {
+                    // Останавливаем контейнер
                     sh 'docker stop go_test || true'
+                    
+                    // Ждем завершения команды
+                    sleep(5)  // Пауза на 5 секунд для уверенности
+
+                    // Удаляем контейнер
                     sh 'docker rm -f go_test || true'
+
+                    echo "Контейнер go_test успешно очищен."
                 } catch (err) {
-                    echo "Error clean conteiner: ${err}"
+                    echo "Ошибка при очистке контейнера: ${err}"
                 }
             }
         }
