@@ -19,13 +19,7 @@ pipeline {
         }
 
     
-        stage('Build Image') {
-            steps {
-                sh 'docker tag test:latest new-test:v1'
-                sh "docker build -t test ."
-            }
-        }
-
+        
 stage('Cleanup') {
     steps {
         script {
@@ -45,6 +39,14 @@ stage('Cleanup') {
         }
     }
 }
+
+stage('Build Image') {
+            steps {
+                sh 'docker tag test:latest new-test:v1'
+                sh "docker build -t test ."
+            }
+        }
+
 
 
         stage('Run Docker Container') {
