@@ -42,8 +42,8 @@ stage('Cleanup') {
 
 stage('Build Image') {
             steps {
-                sh 'docker tag test:latest new-test:v1'
-                sh "docker build -t test ."
+                //sh 'docker tag test:latest new-test:v1'
+                sh "docker build -t test:latest ."
             }
         }
 
