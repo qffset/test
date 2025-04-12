@@ -29,8 +29,8 @@ pipeline {
             steps {
                 sh '''
                     # Очистка старых контейнеров
-                    # docker stop g0_test
-                    # docker rm g0_test
+                     docker stop go_test
+                     docker rm go_test
                     # Очистка старых образов
                     # docker image prune -af
                 '''
