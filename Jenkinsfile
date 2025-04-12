@@ -26,16 +26,18 @@ pipeline {
         }
 
     stage('Cleanup') {
-            steps {
-                sh '''
-                    # Очистка старых контейнеров
-                     docker stop go_test
-                     docker rm go_test
-                    # Очистка старых образов
-                    # docker image prune -af
-                '''
+    steps {
+        // Очистка старых контейнеров
+        script {
+            try {
+                sh 'docker stop go_test || true'
+                sh 'docker rm go_test || true'
+            } catch (err) {
+                echo "Ошибка очистки контейнера: ${err}"
             }
         }
+    }
+}
 
 
         stage('Run Docker Container') {
