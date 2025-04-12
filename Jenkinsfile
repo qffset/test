@@ -25,15 +25,21 @@ pipeline {
             }
         }
 
-    stage('Cleanup') {
+stage('Cleanup') {
     steps {
-        // Очистка старых контейнеров
         script {
-            try {
-                sh 'docker stop go_test || true'
-                sh 'docker rm go_test || true'
-            } catch (err) {
-                echo "Ошибка очистки контейнера: ${err}"
+            // Проверяем, существует ли контейнер
+            def containerExists = sh(script: 'docker ps -a | grep go_test', returnStatus: true)
+            
+            if (!containerExists) {
+                echo "Контейнер go_test не найден."
+            } else {
+                try {
+                    sh 'docker stop go_test || true'
+                    sh 'docker rm go_test || true'
+                } catch (err) {
+                    echo "Ошибка очистки контейнера: ${err}"
+                }
             }
         }
     }
