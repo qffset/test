@@ -2,66 +2,30 @@ pipeline {
     agent {
         label 'Chirik' // Указываем конкретный агент для выполнения всего pipeline
     }
-
-        stages {
-        stage('Checkout') {
-            steps {
-                git url: 'https://github.com/qffset/test.git', branch: 'main'
-            }
-        }
-
-            
-            
-        stage('Unit Tests') {
-            steps {
-                sh 'go test ./...'
-            }
-        }
-
-    
         
-stage('Cleanup') {
-    steps {
-        script {
-            // Проверяем, существует ли контейнер
-            def containerFound = sh(script: 'docker ps -a | grep go_test', returnStatus: true)
+        stage('Build') {
+            steps {
+                echo "Building ${env.BRANCH_NAME}..."
+                // Команда для сборки
 
-            if (!containerFound) {
-                echo "Контейнер go_test не найден."
-            } else {
-                try {
-                    // Останавливаем контейнер
-                    sh 'docker stop go_test || true'
-                    
-                    // Ждем завершения команды
-                    sleep(5)  // Пауза на 5 секунд для уверенности
-
-                    // Удаляем контейнер
-                    sh 'docker rm -f go_test || true'
-
-                    echo "Контейнер go_test успешно очищен."
-                } catch (err) {
-                    echo "Ошибка при очистке контейнера: ${err}"
-                }
             }
         }
-    }
+        stage('Test') {
+            steps {
+                echo "Testing ${env.BRANCH_NAME}..."
+                sh 'docker run -d -p 8080:8080 --name go_test test'
+
 }
-
-stage('Build Image') {
-            steps {
-                //sh 'docker tag test:latest new-test:v1'
-                sh "docker build -t test:latest ."
             }
         }
-
-
-
-        stage('Run Docker Container') {
+        stage('Deploy') {
+            when {
+                expression { env.BRANCH_NAME == 'main' }
+            }
             steps {
-               sh 'docker run -d -p 8080:8080 --name go_test test'
+                echo "Deploying ${env.BRANCH_NAME}..."
+                sh 'docker run -d -p 8080:8080 --name go_test test'
             }
         }
-    
     }
 }
